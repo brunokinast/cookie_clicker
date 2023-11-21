@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -5,31 +6,51 @@ import 'dart:typed_data';
 import 'package:cookie_clicker_client/logger.dart';
 
 typedef Command = ({String command, String value});
-typedef DataCallback = void Function(Command data, String? error);
+typedef DataCallback = void Function(Command data);
 
 class CookieClient {
   Socket? _socket;
   final List<DataCallback> _listeners = [];
+  final StreamController<bool> _connection = StreamController<bool>.broadcast();
+
+  Stream<bool> get connection => _connection.stream;
 
   Future<void> connect({
     required InternetAddress address,
     required int port,
   }) async {
     _socket = await Socket.connect(address, port);
+    _connection.add(true);
     _socket!.listen(
       _onData,
-      onDone: () => _sendToAll((command: '', value: ''), 'Connection closed'),
-      onError: (error) => _sendToAll((command: '', value: ''), '$error'),
+      onDone: () => _handleDisconnect,
+      onError: (e) => _handleDisconnect,
     );
+  }
+
+  void send(Command command) {
+    final data = '${command.command}:${command.value}';
+    logger('Sending data: $data');
+    if (_socket == null) {
+      logger('Unable to send. Socket is null.', error: true);
+    } else {
+      _socket!.write(utf8.encode(data));
+    }
   }
 
   void addListener(DataCallback listener) {
     _listeners.add(listener);
   }
 
+  void _handleDisconnect() {
+    _connection.add(false);
+    _socket!.destroy();
+    _socket = null;
+  }
+
   void _sendToAll(Command data, String? error) {
     for (DataCallback listener in _listeners) {
-      listener(data, error);
+      listener(data);
     }
   }
 

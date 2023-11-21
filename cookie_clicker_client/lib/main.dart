@@ -1,6 +1,7 @@
-import 'package:cookie_clicker_client/cookie_client.dart';
-import 'package:cookie_clicker_client/cookie_manager.dart';
-import 'package:cookie_clicker_client/widgets/connection_listener.dart';
+import 'package:cookie_clicker_client/app/cookie_client.dart';
+import 'package:cookie_clicker_client/app/cookie_manager.dart';
+import 'package:cookie_clicker_client/widgets/connection_page.dart';
+import 'package:cookie_clicker_client/widgets/cookie_page.dart';
 import 'package:flutter/material.dart';
 
 final CookieClient cookieClient = CookieClient();
@@ -21,65 +22,9 @@ class CookieClicker extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: ConnectionListener(
+      home: ConnectionPage(
         client: cookieClient,
-        child: const CookiePage(),
-      ),
-    );
-  }
-}
-
-class CookiePage extends StatefulWidget {
-  const CookiePage({super.key});
-
-  @override
-  State<CookiePage> createState() => _CookiePageState();
-}
-
-class _CookiePageState extends State<CookiePage> {
-  int _counter = 0;
-
-  @override
-  void initState() {
-    cookieManager.count.listen((count) {
-      setState(() {
-        _counter = count;
-      });
-    });
-    super.initState();
-  }
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('Cookie Clicker Multiplayer'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        child: CookiePage(manager: cookieManager),
       ),
     );
   }

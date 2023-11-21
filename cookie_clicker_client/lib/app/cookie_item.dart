@@ -1,3 +1,5 @@
+import 'dart:async';
+
 List<CookieItem> get allItems => [
       CookieGrandma(),
     ];
@@ -7,17 +9,16 @@ abstract class CookieItem {
   final String description;
   final String uniqueName;
   final int basePrice;
-  final int cookieSecond;
+  final StreamController<int> ownedController;
 
-  int owned = 0;
+  Stream<int> get owned => ownedController.stream;
 
   CookieItem({
     required this.name,
     required this.description,
     required this.uniqueName,
     required this.basePrice,
-    required this.cookieSecond,
-  });
+  }) : ownedController = StreamController.broadcast();
 }
 
 class CookieGrandma extends CookieItem {
@@ -27,6 +28,5 @@ class CookieGrandma extends CookieItem {
           description: 'A nice grandma to bake more cookies.',
           uniqueName: 'grandma',
           basePrice: 10,
-          cookieSecond: 1,
         );
 }
