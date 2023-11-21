@@ -9,5 +9,6 @@ void logger(String message, {bool error = false}) {
     message,
     name: 'Server',
     level: error ? Level.INFO.value : Level.SEVERE.value,
+    time: DateTime.now(),
   );
 }

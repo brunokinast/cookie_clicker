@@ -18,6 +18,8 @@ class CookieServer {
     ServerSocket server =
         await ServerSocket.bind(InternetAddress.loopbackIPv4, port);
 
+    logger('Server started on ${server.address.address}:${server.port}');
+
     server.listen(_addClient);
   }
 
