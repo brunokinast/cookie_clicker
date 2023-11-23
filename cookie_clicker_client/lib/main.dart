@@ -24,6 +24,7 @@ class CookieClicker extends StatelessWidget {
       ),
       home: ConnectionPage(
         client: cookieClient,
+        manager: cookieManager,
         child: CookiePage(manager: cookieManager),
       ),
     );

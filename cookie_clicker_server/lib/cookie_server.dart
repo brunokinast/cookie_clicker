@@ -16,7 +16,7 @@ class CookieServer {
 
   Future<void> start() async {
     ServerSocket server =
-        await ServerSocket.bind(InternetAddress.loopbackIPv4, port);
+        await ServerSocket.bind(InternetAddress.anyIPv4, port);
 
     logger('Server started on ${server.address.address}:${server.port}');
 
@@ -28,7 +28,7 @@ class CookieServer {
   }
 
   void sendToAll(Command command) {
-    final data = utf8.encode('${command.command}:${command.value}');
+    final data = utf8.encode('${command.command}:${command.value}\n');
     for (Socket client in _clients.values) {
       client.add(data);
     }
@@ -60,14 +60,18 @@ class CookieServer {
     try {
       final parsed = utf8.decode(data);
       logger('Parsed data from $address: $parsed');
-      final index = parsed.indexOf(':');
-      if (index == -1) {
-        throw Exception('Invalid command format');
-      } else {
-        final command = parsed.substring(0, index);
-        final value = parsed.substring(index + 1).trim();
-        for (DataCallback listener in _listeners) {
-          listener(address, (command: command, value: value));
+      for (String line in parsed.split('\n')) {
+        if (line.isNotEmpty) {
+          final index = line.indexOf(':');
+          if (index == -1) {
+            throw Exception('Invalid command format');
+          } else {
+            final command = line.substring(0, index);
+            final value = line.substring(index + 1).trim();
+            for (DataCallback listener in _listeners) {
+              listener(address, (command: command, value: value));
+            }
+          }
         }
       }
     } catch (e) {

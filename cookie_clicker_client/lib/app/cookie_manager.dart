@@ -1,7 +1,6 @@
-import 'dart:async';
-
 import 'package:cookie_clicker_client/app/cookie_client.dart';
 import 'package:cookie_clicker_client/app/cookie_item.dart';
+import 'package:get/get.dart';
 
 enum ServerAction {
   click,
@@ -17,16 +16,12 @@ enum ClientAction {
 
 class CookieManager {
   final CookieClient _client;
-  final StreamController<String> _announcements;
-  final StreamController<int> _count;
   final List<CookieItem> items = allItems;
 
-  Stream<String> get announcements => _announcements.stream;
-  Stream<int> get count => _count.stream;
+  final RxList<String> announcements = RxList([]);
+  final RxInt count = RxInt(0);
 
-  CookieManager(this._client)
-      : _announcements = StreamController.broadcast(),
-        _count = StreamController.broadcast() {
+  CookieManager(this._client) {
     _client.addListener(_onData);
   }
 
@@ -44,9 +39,9 @@ class CookieManager {
 
   void _onData(Command data) {
     if (data.command == ClientAction.count.name) {
-      _count.add(int.parse(data.value));
+      count.value = int.parse(data.value);
     } else if (data.command == ClientAction.announce.name) {
-      _announcements.add(data.value);
+      announcements.add(data.value);
     } else if (data.command == ClientAction.updateQuantity.name) {
       // Data is in the format of: uniqueName:quantity
       final index = data.value.indexOf(':');
@@ -54,7 +49,7 @@ class CookieManager {
         final uniqueName = data.value.substring(0, index);
         final quantity = int.parse(data.value.substring(index + 1));
         final item = items.firstWhere((item) => item.uniqueName == uniqueName);
-        item.ownedController.add(quantity);
+        item.owned.value = quantity;
       }
     }
   }

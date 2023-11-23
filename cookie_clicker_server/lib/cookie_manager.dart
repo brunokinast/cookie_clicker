@@ -24,7 +24,7 @@ class CookieManager {
 
   int _cookies;
 
-  CookieManager(this._server) : _cookies = 10 {
+  CookieManager(this._server) : _cookies = 0 {
     _server.addListener(_onData);
     Timer.periodic(Duration(seconds: 1), _onTimer);
   }
@@ -56,6 +56,7 @@ class CookieManager {
       0,
       (sum, item) => sum + item.owned * item.cookieSecond,
     );
+    // Take into account _updateInterval
     _setCookies(_cookies + generated);
   }
 
