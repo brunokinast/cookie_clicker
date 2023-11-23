@@ -1,6 +1,7 @@
 import 'package:cookie_clicker_client/app/cookie_client.dart';
 import 'package:cookie_clicker_client/app/cookie_manager.dart';
 import 'package:cookie_clicker_client/widgets/stone_button.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -18,9 +19,9 @@ class ConnectionPage extends StatelessWidget {
 
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _addressController =
-      TextEditingController(text: '10.0.2.2');
+      TextEditingController(text: 'cookie.kinast.com.br');
   final TextEditingController _portController =
-      TextEditingController(text: '6789');
+      TextEditingController(text: kIsWeb ? '25566' : '25565');
 
   TextField _buildTextField({
     required TextEditingController controller,
