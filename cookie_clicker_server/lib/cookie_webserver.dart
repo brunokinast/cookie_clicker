@@ -47,12 +47,10 @@ class CookieWebserver implements CookieServer {
       onDone: () {
         logger('Client $address disconnected.');
         _clients.remove(client);
-        client.close();
       },
       onError: (error) {
         logger('Client $address error: $error', error: true);
         _clients.remove(client);
-        client.close();
       },
     );
   }
