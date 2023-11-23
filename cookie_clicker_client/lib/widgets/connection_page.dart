@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:cookie_clicker_client/app/cookie_client.dart';
 import 'package:cookie_clicker_client/app/cookie_manager.dart';
 import 'package:cookie_clicker_client/widgets/stone_button.dart';
@@ -20,7 +18,7 @@ class ConnectionPage extends StatelessWidget {
 
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _addressController =
-      TextEditingController(text: InternetAddress('10.0.2.2').address);
+      TextEditingController(text: '10.0.2.2');
   final TextEditingController _portController =
       TextEditingController(text: '6789');
 
@@ -134,8 +132,7 @@ class ConnectionPage extends StatelessWidget {
                                   ),
                                 );
                               } else {
-                                final address =
-                                    InternetAddress(_addressController.text);
+                                final address = _addressController.text;
                                 final port = int.parse(_portController.text);
                                 setEnabled(false);
                                 try {

@@ -1,32 +1,34 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
-import 'dart:typed_data';
 
+import 'package:cookie_clicker_client/app/cookie_client.dart';
 import 'package:cookie_clicker_client/logger.dart';
 import 'package:get/get.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 typedef Command = ({String command, String value});
 typedef DataCallback = void Function(Command data);
 
-class CookieClient {
-  Socket? _socket;
+class CookieWebclient implements CookieClient {
+  WebSocketChannel? _socket;
   final List<DataCallback> _listeners = [];
+
+  @override
   final RxBool connected = RxBool(false);
 
+  @override
   Future<void> connect({
     required String address,
     required int port,
   }) async {
     try {
-      _socket = await Socket.connect(
-        address,
-        port,
-        timeout: const Duration(seconds: 10),
+      _socket = WebSocketChannel.connect(
+        Uri.parse('ws://$address:$port'),
       );
+      await _socket!.ready;
       connected.value = true;
       // Catch errors on the socket
-      _socket!.listen(
+      _socket!.stream.listen(
         _onData,
         onError: (e) {
           logger('Error on socket: $e', error: true);
@@ -43,6 +45,7 @@ class CookieClient {
     }
   }
 
+  @override
   void send(Command command) {
     try {
       final data = '${command.command}:${command.value}\n';
@@ -50,7 +53,7 @@ class CookieClient {
       if (_socket == null) {
         logger('Unable to send. Socket is null.', error: true);
       } else {
-        _socket!.add(utf8.encode(data));
+        _socket!.sink.add(utf8.encode(data));
       }
     } catch (e) {
       logger('Error sending data: $e', error: true);
@@ -58,13 +61,14 @@ class CookieClient {
     }
   }
 
+  @override
   void addListener(DataCallback listener) {
     _listeners.add(listener);
   }
 
   void _handleDisconnect() {
     connected.value = false;
-    _socket?.destroy();
+    _socket?.sink.close();
     _socket = null;
   }
 
@@ -74,7 +78,7 @@ class CookieClient {
     }
   }
 
-  void _onData(Uint8List data) {
+  void _onData(dynamic data) {
     logger('Received data: $data');
     try {
       final parsed = utf8.decode(data);

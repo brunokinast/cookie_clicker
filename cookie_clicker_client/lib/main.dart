@@ -1,18 +1,37 @@
 import 'package:cookie_clicker_client/app/cookie_client.dart';
 import 'package:cookie_clicker_client/app/cookie_manager.dart';
+import 'package:cookie_clicker_client/app/cookie_webclient.dart';
 import 'package:cookie_clicker_client/widgets/connection_page.dart';
 import 'package:cookie_clicker_client/widgets/cookie_page.dart';
 import 'package:flutter/material.dart';
-
-final CookieClient cookieClient = CookieClient();
-final CookieManager cookieManager = CookieManager(cookieClient);
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 void main() {
-  runApp(const CookieClicker());
+  final CookieClient client;
+
+  if (kIsWeb) {
+    client = CookieWebclient();
+  } else {
+    client = CookieClient();
+  }
+
+  final CookieManager manager = CookieManager(client);
+
+  runApp(CookieClicker(
+    cookieClient: client,
+    cookieManager: manager,
+  ));
 }
 
 class CookieClicker extends StatelessWidget {
-  const CookieClicker({super.key});
+  final CookieClient cookieClient;
+  final CookieManager cookieManager;
+
+  const CookieClicker({
+    super.key,
+    required this.cookieClient,
+    required this.cookieManager,
+  });
 
   @override
   Widget build(BuildContext context) {

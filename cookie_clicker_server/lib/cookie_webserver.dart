@@ -2,40 +2,42 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:cookie_clicker_server/cookie_server.dart';
 import 'package:cookie_clicker_server/logger.dart';
 
-typedef Command = ({String command, String value});
-typedef DataCallback = void Function(String address, Command data);
-
-class CookieServer {
+class CookieWebserver implements CookieServer {
   final int _port;
-  final Map<String, Socket> _clients = {};
+  final Map<String, WebSocket> _clients = {};
   final List<DataCallback> _listeners = [];
 
-  CookieServer(this._port);
+  int _lastId = 0;
 
+  CookieWebserver(this._port);
+
+  @override
   Future<void> start() async {
-    ServerSocket server =
-        await ServerSocket.bind(InternetAddress.anyIPv4, _port);
+    HttpServer server = await HttpServer.bind(InternetAddress.anyIPv4, _port);
 
     logger('Server started on ${server.address.address}:${server.port}');
 
-    server.listen(_addClient);
+    server.transform(WebSocketTransformer()).listen(_addClient);
   }
 
+  @override
   void addListener(DataCallback listener) {
     _listeners.add(listener);
   }
 
+  @override
   void sendToAll(Command command) {
     final data = utf8.encode('${command.command}:${command.value}\n');
-    for (Socket client in _clients.values) {
+    for (WebSocket client in _clients.values) {
       client.add(data);
     }
   }
 
-  void _addClient(Socket client) {
-    String address = '${client.remoteAddress.address}:${client.remotePort}';
+  void _addClient(WebSocket client) {
+    String address = '${_lastId++}';
     logger('Client connected: $address');
 
     _clients[address] = client;
@@ -45,12 +47,12 @@ class CookieServer {
       onDone: () {
         logger('Client $address disconnected.');
         _clients.remove(client);
-        client.destroy();
+        client.close();
       },
       onError: (error) {
         logger('Client $address error: $error', error: true);
         _clients.remove(client);
-        client.destroy();
+        client.close();
       },
     );
   }
